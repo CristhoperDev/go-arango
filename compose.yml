@@ -1,0 +1,13 @@
+version: "3.2"
+
+services:
+
+  arangodb:
+    image: arangodb/arangodb
+    environment:
+      - ARANGO_NO_AUTH=1
+    volumes:
+      - ./compose/arangodb:/data
+    ports:
+      - 8529:8529
+    command: "arangod --server.endpoint tcp://0.0.0.0:8529"
