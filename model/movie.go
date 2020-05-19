@@ -7,3 +7,13 @@ type Movie struct {
 	CreatedAt 		*string 	`json:"createdAt"`
 	UpdatedAt 		*string 	`json:"updatedAt"`
 }
+
+type Employee struct {
+	Key 			*string 	`json:"_key"`
+	Name 			string 		`json:"name"`
+	LastName 		string 		`json:"lastName"`
+	Degree	 		string 		`json:"degree"`
+	FlagWork	 	bool 		`json:"flagWork"`
+	CreatedAt 		*string 	`json:"createdAt"`
+	UpdatedAt 		*string 	`json:"updatedAt"`
+}

@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	arangodb "github.com/arangodb/go-driver"
 	arangodbhttp "github.com/arangodb/go-driver/http"
@@ -192,6 +193,7 @@ func (s *Db) GetDocumentCollection(collection string, isRelation bool) (arangodb
 		}
 
 		col, err := s.db.CreateCollection(ctx, collection, options)
+		col.EnsureTTLIndex(ctx, "createdAt", 60, nil)
 
 		if err != nil {
 			return nil, err
@@ -299,7 +301,7 @@ func (s *Db) ImportDBDocument(collection arangodb.Collection, document interface
 // CreateDBDocument creates the specified document within the passed collection
 func (s *Db) CreateDBDocument(collection arangodb.Collection, document interface{}) (string, error) {
 
-	ctx, _ := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 	ctx = arangodb.WithWaitForSync(ctx)
 
 	meta, err := collection.CreateDocument(ctx, document)
@@ -377,6 +379,18 @@ func (s *Db) GetAllMovies() ([]*model.Movie, error) {
 	return result, nil
 }
 
+// CreateEvent creates a event in the store
+func (s *Db) CreateEvent(item *model.EventLog) error {
+
+	_, err := s.CreateDBDocument(s.collections["Event"], item)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // CreateAnnouncement creates a announcement in the store
 func (s *Db) CreateMovie(item *model.Movie) error {
 
@@ -412,6 +426,65 @@ func (s *Db) DeleteMovie(item *model.Movie) error {
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+
+// CreateEvent creates a event in the store
+func (s *Db) UpdateDataEvent(key string, event []*model.Event) error {
+
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*5)
+
+	events, err := json.Marshal(event)
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+	}
+
+	var query string
+
+	query = "FOR d IN Event FILTER d._key == '" + key + "' UPDATE d WITH { events: APPEND(d.events," + string(events) + " ) } IN Event"
+
+	cursor, err := s.db.Query(ctx, query, nil)
+	if err != nil {
+		return err
+	}
+
+	defer cursor.Close()
+
+	return nil
+
+	/*ctx, _ := context.WithTimeout(context.Background(), time.Second*5)
+
+	var result []*model.Movie
+
+	var query string
+
+	query = fmt.Sprintf("FOR d IN %s RETURN d", "Movie")
+
+	cursor, err := s.db.Query(ctx, query, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer cursor.Close()
+
+	for {
+
+		var doc model.Movie
+		_, err := cursor.ReadDocument(ctx, &doc)
+
+		if arangodb.IsNoMoreDocuments(err) {
+			break
+		} else if err != nil {
+			return nil, err
+		}
+
+		result = append(result, &doc)
+	}
+
+	return result, nil*/
 
 	return nil
 }
