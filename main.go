@@ -94,14 +94,14 @@ func main() {
 		Month:  int(Now.Month()),
 		Day:    Now.Day(),
 		Hour:   Now.Hour(),
-		CreatedAt: utils.NowUTC(),
+		CreatedAt: utils.NowUTC(),// to manage ttl
 		Events: []*model.Event{},
 	}
 
 	_ = db.CreateEvent(EventLog)
 
 	Events := []*model.Event{}
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 50; i++ {
 		key, _ := utils.NewUUID()
 		userID, _ := utils.NewUUID()
 		objectID, _ := utils.NewUUID()
@@ -124,7 +124,7 @@ func main() {
 		})
 
 	}
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 50; i++ {
 		key, _ := utils.NewUUID()
 		userID, _ := utils.NewUUID()
 		objectID, _ := utils.NewUUID()
@@ -152,7 +152,7 @@ func main() {
 
 	fmt.Println(*utils.NowUTC())
 
-	fmt.Println("Init bulk import")
+	fmt.Println("Init update array")
 	start := time.Now()
 	//bulk import
 	err = db.UpdateDataEvent(key, Events)

@@ -7,12 +7,7 @@ import (
 	"github.com/cristhoperdev/events-import/model"
 	"github.com/cristhoperdev/events-import/utils"
 	"github.com/labstack/echo"
-	"gopkg.in/natefinch/lumberjack.v2"
-	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 var store connection.Datastore
@@ -21,27 +16,6 @@ func MoviePost(c echo.Context) error {
 	utils.ConsoleLog(c)
 	var jsonObj model.JsonResult
 	var status int
-
-	l := &lumberjack.Logger{
-		Filename:   "logs/access.json",
-		MaxSize:    0,
-		MaxAge:     1,
-		MaxBackups: 1,
-		LocalTime:  false,
-		Compress:   false,
-	}
-	log.SetOutput(l)
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGHUP)
-	jsonr, _ := json.MarshalIndent(event, "", "\t")
-	log.Println(jsonr)
-	go func() {
-		for {
-			<-ch
-			l.Rotate()
-		}
-	}()
-
 
 	decoder := json.NewDecoder(c.Request().Body)
 	var movie *model.Movie

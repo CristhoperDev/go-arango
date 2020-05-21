@@ -193,7 +193,10 @@ func (s *Db) GetDocumentCollection(collection string, isRelation bool) (arangodb
 		}
 
 		col, err := s.db.CreateCollection(ctx, collection, options)
-		col.EnsureTTLIndex(ctx, "createdAt", 60, nil)
+		col.EnsureTTLIndex(ctx, "createdAt", 60, &arangodb.EnsureTTLIndexOptions{
+			InBackground: true,
+			Name:         "expiredAt",
+		})
 
 		if err != nil {
 			return nil, err
